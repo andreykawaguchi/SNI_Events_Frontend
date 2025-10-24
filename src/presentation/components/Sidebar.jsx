@@ -1,113 +1,97 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp, faUser, faCalendar } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faChevronUp, faUser, faCalendar, faHome, faCog } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../shared/contexts/AuthContext.jsx';
 
 export default function Sidebar() {
   const { logout, user } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const location = useLocation();
 
-  return (
-    <aside
-      className={`app-sidebar flex flex-col bg-slate-900 text-slate-100 p-4 box-border transition-all duration-200 ${
-        collapsed ? 'w-16' : 'w-56'
-      }`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="font-bold text-lg">{collapsed ? 'S' : 'SNI Events'}</div>
-          {!collapsed && <div className="sidebar-user text-sm opacity-90">{user?.name || user?.email}</div>}
-        </div>
+  const isSettingsActive = 
+    settingsOpen ||
+    location.pathname.startsWith('/users') ||
+    location.pathname.startsWith('/events');
 
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="p-1 rounded hover:bg-slate-800 focus:outline-none"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className={`h-5 w-5 transform transition-transform ${collapsed ? '' : 'rotate-180'}`}
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
+  return (
+    <aside className="app-sidebar">
+      <div className="sidebar-header">
+        <h3>SNI Events</h3>
+        <p className="sidebar-user">{user?.name || user?.email}</p>
       </div>
 
-      <nav className="sidebar-nav flex flex-col gap-1">
+      <nav className="sidebar-nav">
         <NavLink
           to="/home"
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-2 py-2 rounded hover:bg-slate-800 ${isActive ? 'bg-slate-800 text-white' : 'text-slate-200'}`
-          }
+          className={({ isActive }) => isActive ? 'active' : ''}
         >
-          <span className="font-semibold">{collapsed ? 'H' : 'Home'}</span>
+          <FontAwesomeIcon icon={faHome} className="w-4 h-4" />
+          <span>Home</span>
         </NavLink>
 
-        <div>
-          {(() => {
-            const isSettingsActive =
-              settingsOpen ||
-              location.pathname.startsWith('/users') ||
-              location.pathname.startsWith('/events');
-
-            return (
-              <NavLink
-                onClick={() => setSettingsOpen((s) => !s)}
-                aria-expanded={settingsOpen}
-                className={`flex items-center justify-between gap-3 px-2 py-2 rounded hover:bg-slate-800 ${isSettingsActive ? 'bg-slate-800 text-white' : 'text-slate-200'}`}
-              >
-                <span className="flex items-center gap-3">
-                  <span className="font-semibold">{collapsed ? 'C' : 'Configurações'}</span>
-                </span>
-
-                {!collapsed && (
-                  <FontAwesomeIcon
-                    icon={settingsOpen ? faChevronUp : faChevronDown}
-                    className={`h-4 w-4 transform transition-transform ${settingsOpen ? 'rotate-180' : ''}`}
-                  />
-                )}
-              </NavLink>
-            );
-          })()}
+        <div style={{ marginBottom: '0.5rem' }}>
+          <button
+            onClick={() => setSettingsOpen((s) => !s)}
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              marginBottom: '0.5rem',
+              color: '#cbd5e1',
+              textDecoration: 'none',
+              borderRadius: '0.5rem',
+              fontSize: '0.95rem',
+              transition: 'all 150ms ease',
+              cursor: 'pointer',
+              border: 'none',
+              background: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              justifyContent: 'space-between',
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(15, 23, 42, 0.5)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            className={isSettingsActive ? 'active' : ''}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <FontAwesomeIcon icon={faCog} className="w-4 h-4" />
+              <span>Configurações</span>
+            </span>
+            <FontAwesomeIcon 
+              icon={settingsOpen ? faChevronUp : faChevronDown}
+              className="h-4 w-4"
+              style={{ transform: settingsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms ease' }}
+            />
+          </button>
 
           {settingsOpen && (
-            <div className="flex flex-col pl-4 mt-1">
+            <div style={{ paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <NavLink
                 to="/users"
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-2 py-2 rounded hover:bg-slate-800 ${isActive ? 'bg-slate-800 text-white' : 'text-slate-200'}`
-                }
+                className={({ isActive }) => isActive ? 'active' : ''}
+                style={{ paddingLeft: '2.5rem' }}
               >
                 <FontAwesomeIcon icon={faUser} className="w-4 h-4" />
-                <span className="text-sm">{collapsed ? 'U' : 'Usuários'}</span>
+                <span>Usuários</span>
               </NavLink>
 
               <NavLink
                 to="/events"
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-2 py-2 rounded hover:bg-slate-800 ${isActive ? 'bg-slate-800 text-white' : 'text-slate-200'}`
-                }
+                className={({ isActive }) => isActive ? 'active' : ''}
+                style={{ paddingLeft: '2.5rem' }}
               >
                 <FontAwesomeIcon icon={faCalendar} className="w-4 h-4" />
-                <span className="text-sm">{collapsed ? 'E' : 'Eventos'}</span>
+                <span>Eventos</span>
               </NavLink>
             </div>
           )}
         </div>
       </nav>
 
-      <div className="sidebar-footer mt-auto">
-        <button onClick={logout} className="btn-logout w-full">
-          {collapsed ? '\u238b' : 'Logout'}
+      <div className="sidebar-footer">
+        <button onClick={logout} className="btn-logout">
+          Sair
         </button>
       </div>
     </aside>

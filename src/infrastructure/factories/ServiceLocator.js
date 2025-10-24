@@ -3,8 +3,11 @@
  * Segue o padrão Singleton para evitar múltiplas instâncias
  */
 import AuthService from '../http/AuthService';
+import UserService from '../http/UserService';
 import LocalStorageService from '../storage/LocalStorageService';
 import LoginUseCase from '../../domain/LoginUseCase';
+import CreateUserUseCase from '../../domain/usecases/CreateUserUseCase';
+import UpdateUserUseCase from '../../domain/usecases/UpdateUserUseCase';
 
 class ServiceLocator {
   constructor() {
@@ -37,6 +40,18 @@ class ServiceLocator {
       case 'authService':
         const storageService = this.get('storage');
         return new AuthService(storageService);
+
+      case 'userService':
+        const storage = this.get('storage');
+        return new UserService(storage);
+
+      case 'createUserUseCase':
+        const userSvc = this.get('userService');
+        return new CreateUserUseCase(userSvc);
+
+      case 'updateUserUseCase':
+        const userSvc2 = this.get('userService');
+        return new UpdateUserUseCase(userSvc2);
 
       case 'loginUseCase':
         const authService = this.get('authService');

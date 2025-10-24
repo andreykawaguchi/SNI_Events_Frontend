@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-// Simple mock fetch - replace with real service call later
-const mockFetchUsers = () =>
-    Promise.resolve([
-        { id: '1', name: 'Andrey Kawaguchi', email: 'andrey@example.com' },
-        { id: '2', name: 'Maria Silva', email: 'maria@example.com' },
-    ]);
+import '../components/components.css';
+import serviceLocator from '../../infrastructure/factories/ServiceLocator';
+import UserModal from '../components/UserModal';
 
 export default function UsersPage() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState('create');
+    const [selectedUser, setSelectedUser] = useState(null);
 
     useEffect(() => {
         let mounted = true;
         setLoading(true);
-        mockFetchUsers()
+        
+        const userService = serviceLocator.get('userService');
+        
+        userService.getPagedUsers(1, 100)
             .then((data) => {
                 if (mounted) setUsers(data);
             })
@@ -31,40 +31,137 @@ export default function UsersPage() {
         return () => (mounted = false);
     }, []);
 
+    /**
+     * Abre a modal para criar novo usuário
+     */
+    const handleOpenCreateModal = () => {
+        setSelectedUser(null);
+        setModalMode('create');
+        setIsModalOpen(true);
+    };
+
+    /**
+     * Abre a modal para editar usuário
+     */
+    const handleOpenEditModal = (user) => {
+        setSelectedUser(user);
+        setModalMode('edit');
+        setIsModalOpen(true);
+    };
+
+    /**
+     * Fecha a modal
+     */
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+    };
+
+    /**
+     * Callback quando o usuário é criado ou atualizado com sucesso
+     */
+    const handleModalSuccess = () => {
+        // Recarregar a lista de usuários
+        const userService = serviceLocator.get('userService');
+        userService.getPagedUsers(1, 100)
+            .then((data) => {
+                setUsers(data);
+            })
+            .catch((err) => {
+                setError(err.message || String(err));
+            });
+    };
+
     return (
-        <div style={{ padding: 20 }}>
-            <div className="flex items-center justify-between mb-4">
-                <h2>Usuários</h2>
+        <div className="max-w-7xl mx-auto">
+            <div className="page-header flex justify-between items-center">
                 <div>
-                    <button onClick={() => navigate('/users/create')} className="px-3 py-1 rounded bg-sky-600 text-white">
-                        Criar usuário
-                    </button>
+                    <h1>Usuários</h1>
+                    <p>Gerenciamento de usuários do sistema</p>
                 </div>
+                <button
+                    onClick={handleOpenCreateModal}
+                    className="btn btn-primary"
+                >
+                    + Novo Usuário
+                </button>
             </div>
 
-            {loading && <div>Carregando usuários...</div>}
-            {error && <div style={{ color: 'red' }}>{error}</div>}
-
-            {!loading && !error && (
-                <table className="min-w-full text-left border-collapse" style={{ borderSpacing: 0 }}>
-                    <thead>
-                        <tr className="border-b">
-                            <th className="p-2">ID</th>
-                            <th className="p-2">Nome</th>
-                            <th className="p-2">Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map((u) => (
-                            <tr key={u.id} className="border-b hover:bg-slate-50">
-                                <td className="p-2">{u.id}</td>
-                                <td className="p-2">{u.name}</td>
-                                <td className="p-2">{u.email}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            {error && (
+                <div className="alert alert-error mb-4" role="alert">
+                    {error}
+                </div>
             )}
+
+            {loading && (
+                <div className="card text-center py-12">
+                    <div className="flex justify-center mb-4">
+                        <div className="spinner"></div>
+                    </div>
+                    <p className="text-gray-600">Carregando usuários...</p>
+                </div>
+            )}
+
+            {!loading && !error && users.length === 0 && (
+                <div className="card text-center py-12">
+                    <p className="text-gray-600 mb-4">Nenhum usuário encontrado</p>
+                    <button
+                        onClick={handleOpenCreateModal}
+                        className="btn btn-outline"
+                    >
+                        Criar o primeiro usuário
+                    </button>
+                </div>
+            )}
+
+            {!loading && !error && users.length > 0 && (
+                <div className="card">
+                    <div className="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th style={{ width: '100px' }}>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map((u) => (
+                                    <tr key={u.id}>
+                                        <td className="text-gray-500 text-sm">{u.id}</td>
+                                        <td className="font-medium">{u.name}</td>
+                                        <td>{u.email}</td>
+                                        <td>
+                                            <div className="table-actions">
+                                                <button 
+                                                    className="btn btn-ghost btn-small"
+                                                    onClick={() => handleOpenEditModal(u)}
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button className="btn btn-danger btn-small">
+                                                    Deletar
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            <UserModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSuccess={handleModalSuccess}
+                mode={modalMode}
+                initialData={selectedUser}
+                createUserUseCase={serviceLocator.get('createUserUseCase')}
+                updateUserUseCase={serviceLocator.get('updateUserUseCase')}
+            />
         </div>
     );
 }
