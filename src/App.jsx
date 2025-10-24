@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './shared/contexts/AuthContext';
+import { AuthProvider } from './shared/contexts/AuthContext.jsx';
 import LoginPage from './presentation/pages/LoginPage';
 import HomePage from './presentation/pages/HomePage';
 import UsersPage from './presentation/pages/UsersPage';

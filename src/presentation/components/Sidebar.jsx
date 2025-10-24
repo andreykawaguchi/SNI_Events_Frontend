@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp, faUser, faCalendar } from '@fortawesome/free-solid-svg-icons';
-import { useAuth } from '../../shared/contexts/AuthContext';
+import { useAuth } from '../../shared/contexts/AuthContext.jsx';
 
 export default function Sidebar() {
   const { logout, user } = useAuth();

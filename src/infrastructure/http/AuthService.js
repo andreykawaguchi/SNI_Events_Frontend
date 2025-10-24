@@ -1,9 +1,18 @@
-// Infra: AuthService - performs HTTP calls to the authentication API.
+/**
+ * Infra: AuthService - Realiza chamadas HTTP para a API de autenticação
+ * Implementa IAuthService
+ */
+import IAuthService from './IAuthService';
 import User from '../../domain/entities/User';
 
 const API_BASE = 'http://localhost:5222';
 
-export default class AuthService {
+export default class AuthService extends IAuthService {
+  constructor(storageService) {
+    super();
+    this.storageService = storageService;
+  }
+
   async login({ email, password }) {
     if (!email || !password) {
       throw new Error('Email and password are required');
@@ -32,16 +41,20 @@ export default class AuthService {
 
     const userData = payload || {};
 
+    // Armazena o token usando o StorageService injetado
     if (userData.token) {
-      try {
-        localStorage.setItem('authToken', userData.token);
-      } catch (e) {
-        // ignore storage errors
-      }
+      this.storageService.setItem('authToken', userData.token);
     }
 
     if (userData.id) {
-      return { user: new User({ id: String(userData.id), name: userData.name || '', email: userData.email || email }), token: userData.token };
+      return {
+        user: new User({
+          id: String(userData.id),
+          name: userData.name || '',
+          email: userData.email || email,
+        }),
+        token: userData.token,
+      };
     }
 
     if (userData.token) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../shared/contexts/AuthContext';
+import { useAuth } from '../../shared/contexts/AuthContext.jsx';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('kawaguchi.andrey@gmail.com');
@@ -13,7 +13,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      // await login({ email, password });
+      await login({ email, password });
       navigate('/home');
     } catch (err) {
       setError(err.message);
@@ -26,16 +26,32 @@ export default function LoginPage() {
       <form onSubmit={submit}>
         <div>
           <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            aria-label="Email input"
+          />
         </div>
         <div>
           <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            aria-label="Password input"
+          />
         </div>
-        <button type="submit" disabled={loading}>{loading ? 'Logging...' : 'Login'}</button>
-        {error && <div style={{ color: 'red' }}>{error}</div>}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging...' : 'Login'}
+        </button>
+        {error && <div style={{ color: 'red' }} role="alert">{error}</div>}
       </form>
-      <p>Use <b>user@example.com</b> / <b>password</b> to login (demo)</p>
+      <p>
+        Use <b>user@example.com</b> / <b>password</b> to login (demo)
+      </p>
     </div>
   );
 }

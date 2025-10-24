@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../shared/contexts/AuthContext';
+import { useAuth } from '../../shared/contexts/AuthContext.jsx';
 
 export default function HomePage() {
   const { user, logout } = useAuth();

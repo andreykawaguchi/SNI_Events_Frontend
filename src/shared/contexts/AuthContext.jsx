@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useState } from 'react';
-import AuthService from '../../infrastructure/http/AuthService';
-import LoginUseCase from '../../application/auth/LoginUseCase';
+import serviceLocator from '../../infrastructure/factories/ServiceLocator';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const authService = new AuthService();
-  const loginUseCase = new LoginUseCase({ authService });
+  // Obtém instâncias únicas dos serviços (Singleton)
+  const loginUseCase = serviceLocator.get('loginUseCase');
+  const storageService = serviceLocator.get('storage');
 
   const [user, setUser] = useState(() => {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = storageService.getItem('authToken');
       return token ? { id: null, name: '', email: null } : null;
     } catch (e) {
       return null;
@@ -34,10 +34,9 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    const authService = serviceLocator.get('authService');
     await authService.logout();
-    try {
-      localStorage.removeItem('authToken');
-    } catch (e) {}
+    storageService.removeItem('authToken');
     setUser(null);
   };
 
